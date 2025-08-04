@@ -14,11 +14,15 @@ df = clean_dataframe(df)
 df = add_computed_fields(df)
 
 pdf = ProductSheetPDF()
+pdf.cover_page("Product Sheet")
 pdf.add_page()
+
+stripe_toggle = False
 
 for _, row in df.iterrows():
     if pdf.get_y() > 260:
         pdf.add_page()
-    pdf.add_product_block(row)
+    pdf.add_product_block(row, stripe=stripe_toggle)
+    stripe_toggle = not stripe_toggle
 
 pdf.output("outputs/product_sheet.pdf")
