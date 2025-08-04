@@ -1,0 +1,5 @@
+pandas 
+fpdf2 
+openpyxl
+watchdog 
+slack_sdk
