@@ -6,7 +6,7 @@ src/excel_parser.py
 import pandas as pd
 
 
-REQUIRED_COLUMNS = {"SKU", "Name", "Description", "Price"}
+REQUIRED_COLUMNS = {"SKU", "Name", "Description", "Price", "Stock"}
 
 
 def validate_columns(df):
@@ -45,3 +45,25 @@ def load_all_sheets(path):
         return sheets # dict: {sheet_name: DataFrame}
     except Exception as e:
         raise ValueError(f"Failed to load multiple sheets: {e}")
+    
+def clean_dataframe(df):
+
+    # Remove whitespace
+    df.columns = df.columns.str.strip()
+    df["SKU"] = df["SKU"].astype(str).str.strip()
+    df["Name"] = df["Name"].astype(str).str.strip()
+    df["Description"] = df["Description"].astype(str).str.strip()
+
+    # Convert Price to float and round to 2 decimals
+    df["Price"] = pd.to_numeric(df["Stock"], errors="coerce").round(2)
+
+    # Convert stock to integer
+    df["Stock"] = pd.to_numeric(df["Stock"], errors="coerce").fillna(0).astype(int)
+
+    return df
+
+def add_computed_fields(df, vat_rate=0.2):
+
+    df["PriceWithVAT"] = (df["Price"] * (1 + vat_rate)).round(2)
+
+    return df
