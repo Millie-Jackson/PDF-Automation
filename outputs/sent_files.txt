@@ -1,0 +1,4 @@
+sample_products.pdf
+june_catalog.pdf
+spooky_merch.pdf
+banana_slicer_demo.pdf
