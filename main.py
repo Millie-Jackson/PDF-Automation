@@ -1,28 +1,30 @@
 """
 src/main.py
+
+Main CLI script for PDF generation.
+Supports both single file and folder batch processing.
 """
 
 
-import pandas as pd
-from src.excel_parser import load_excel, validate_columns, clean_dataframe, add_computed_fields
-from src.pdf_generator import ProductSheetPDF
+import argparse
+from src.run_generators import generate_pdf_from_excel, generate_pdfs_from_folder
 
+def main():
 
-df = load_excel("data/sample_products.xlsx")
-validate_columns(df)
-df = clean_dataframe(df)
-df = add_computed_fields(df)
+    parser = argparse.ArgumentParser(description="Generate PDF product sheets from Excel")
+    parser.add_argument('--file', type=str, help="Path to a single Excel file to convert")
+    parser.add_argument('--folder', type=str, help="Path to a folder containing multiple Excel files")
 
-pdf = ProductSheetPDF()
-pdf.cover_page("Product Sheet")
-pdf.add_page()
+    args = parser.parse_args()
 
-stripe_toggle = False
+    if args.file:
+        output_path = "outputs/" + args.file.split("/")[-1].replace(".xlsx", ".pdf")
+        generate_pdf_from_excel(args.file, output_path)
+    elif args.folder:
+        generate_pdfs_from_folder(input_folder=args.folder, output_folder="outputs")
+    else:
+        print("Please provide either --file or --foler")
 
-for _, row in df.iterrows():
-    if pdf.get_y() > 260:
-        pdf.add_page()
-    pdf.add_product_block(row, stripe=stripe_toggle)
-    stripe_toggle = not stripe_toggle
-
-pdf.output("outputs/product_sheet.pdf")
+    
+if __name__ == "__main__":
+    main()

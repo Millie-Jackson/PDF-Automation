@@ -23,7 +23,6 @@ class ProductSheetPDF(FPDF):
         self.add_font("Lexend", "", "templates/fonts/Lexend-Regular.ttf", uni=True)
         self.add_font("Lexend", "B", "templates/fonts/Lexend-Bold.ttf", uni=True)
         self.set_font("Lexend", "", 12)
-        self.set_font("Lexend", "B", 16)
 
 
     def cover_page(self, title="Product Sheet"):
@@ -32,7 +31,7 @@ class ProductSheetPDF(FPDF):
         self.set_fill_color(240, 240, 255)
         self.rect(0, 0, self.w, self.h, style='F')
         self.image("templates/logo.png", x=10, y=8, w=20)
-        self.set_text_color(BRAND_PURPLE)
+        self.set_text_color(*BRAND_PURPLE)
         self.set_font("Lexend", "B", 28)
         self.set_y(110)
         self.cell(0, 20, title, align="C", ln=True)
@@ -73,6 +72,7 @@ class ProductSheetPDF(FPDF):
         self.set_text_color(*BRAND_TEAL)
         self.multi_cell(0, 8, f"{product['Name']} ({product['SKU']})", border=0, align='L', fill=True)
         
+        # Description
         self.set_font("Lexend", "", 11)
         self.set_text_color(0, 0, 0)
         self.set_x(15)
@@ -90,5 +90,5 @@ class ProductSheetPDF(FPDF):
 
         # Border box
         y_end = self.get_y()
-        self.rect(x=10, y=y_start - 2, w=190, h=(y_end - y_start + 10))
+        self.rect(x=10, y=y_start - 2, w=190, h=(y_end - y_start + 10))  
                   
