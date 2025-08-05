@@ -86,19 +86,19 @@ def send_monthly_summary():
     except Exception as e:
         print(f"Failed to send summary: {e}")
 
-def start_scheduler(run_for_minutes=6):
+def start_scheduler(run_for_minutes=4):
 
     print("Scheduler started!")
     start_time = time.time()
 
     # Every 2 mins - simlated instant-on-change delivery
-    schedule.every(2).minutes.do(send_unsent_pdfs)
+    schedule.every(1).minutes.do(send_unsent_pdfs)
 
     # For real monthly schedule use:
     # schedule.every().month.at("09:00").do(send_monthly_summary)
 
     # Simulate monthly summary every 5 minutes (for testing)
-    schedule.every(5).minutes.do(send_monthly_summary)
+    schedule.every(3).minutes.do(send_monthly_summary)
 
     while True:
         schedule.run_pending()

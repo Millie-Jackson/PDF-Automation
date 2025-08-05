@@ -7,10 +7,13 @@ Supports both single file and folder batch processing.
 
 
 import argparse
+import os
 from src.run_generators import generate_pdf_from_excel, generate_pdfs_from_folder
 from src.watcher import start_watching
 from src.sender import send_pdf_via_email
 from src.scheduler import start_scheduler
+from src.slack import post_to_slack
+from src.webhook import post_webhook_message
 from dotenv import load_dotenv
 
 
@@ -25,6 +28,9 @@ def main():
     parser.add_argument('--watch', action='store_true', help="Watch the folder for file changes")
     parser.add_argument('--email', type=str, help="Path to PDF to send via email")
     parser.add_argument('--schedule', action='store_true', help="Start email scheduler")
+    parser.add_argument('--slack', type=str, help="Send PDF to fake Slack channel")
+    parser.add_argument('--webhook', type=str, help="Send PDF notification via webhook")
+
 
     args = parser.parse_args()
 
@@ -39,6 +45,11 @@ def main():
         send_pdf_via_email(args.email)
     elif args.schedule:
         start_scheduler()
+    elif args.slack:
+        post_to_slack(args.slack)
+    elif args.webhook:
+        load_dotenv()
+        post_webhook_message(os.getenv("WEBHOOK_URL"), args.webhook)
     else:
         print("Please provide either --file, --folder or --watch")
 
