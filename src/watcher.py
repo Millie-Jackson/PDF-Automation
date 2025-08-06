@@ -36,7 +36,7 @@ class ExcelEventHandler(FileSystemEventHandler):
         self.on_modified(event)
 
 
-def start_watching():
+def start_watcher():
     
     print(f"Watching folder: {WATCH_FOLDER}")
     os.makedirs(OUTPUT_FOLDER, exist_ok=True)
