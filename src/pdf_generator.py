@@ -20,9 +20,9 @@ class ProductSheetPDF(FPDF):
         super(). __init__()
         self.set_auto_page_break(auto=True, margin=15)
 
-        self.add_font("Lexend", "", "templates/fonts/Lexend-Regular.ttf", uni=True)
-        self.add_font("Lexend", "B", "templates/fonts/Lexend-Bold.ttf", uni=True)
-        self.set_font("Lexend", "", 12)
+        self.add_font("Helvetica", "", "templates/fonts/Lexend-Regular.ttf", uni=True)
+        self.add_font("Helvetica", "B", "templates/fonts/Lexend-Bold.ttf", uni=True)
+        self.set_font("Helvetica", "", 12)
 
 
     def cover_page(self, title="Product Sheet"):
@@ -32,7 +32,7 @@ class ProductSheetPDF(FPDF):
         self.rect(0, 0, self.w, self.h, style='F')
         self.image("templates/logo.png", x=10, y=8, w=20)
         self.set_text_color(*BRAND_PURPLE)
-        self.set_font("Lexend", "B", 28)
+        self.set_font("Helvetica", "B", 28)
         self.set_y(110)
         self.cell(0, 20, title, align="C", ln=True)
     
@@ -41,7 +41,7 @@ class ProductSheetPDF(FPDF):
         if self.page_no() == 1:
             return
         
-        self.set_font("Lexend", "B", 16)
+        self.set_font("Helvetica", "B", 16)
         self.set_text_color(*BRAND_BLUE)
         self.cell(0, 10, "Product Sheet", ln=True, align="C")
         self.ln(15)
@@ -52,7 +52,7 @@ class ProductSheetPDF(FPDF):
             return
         
         self.set_y(-15)
-        self.set_font("Lexend", "", 8)
+        self.set_font("Helvetica", "", 8)
         self.set_text_color(100, 100, 100)
         self.cell(0, 10, f"Millie Jackson | nestedloop.ai | {datetime.now().strftime('%Y-%m-%d')}", 0, 0, "C")
 
@@ -61,19 +61,19 @@ class ProductSheetPDF(FPDF):
         fill = stripe
         self.set_fill_color(*ZEBRA_GRAY if fill else (255, 255, 255))
         self.set_text_color(0, 0, 0)
-        self.set_font("Lexend", "", 12)
+        self.set_font("Helvetica", "", 12)
         self.cell(0, 10, "", ln=True)
 
         y_start = self.get_y()
         self.set_x(15)
 
         # Name and SKU
-        self.set_font("Lexend", "B", 13)
+        self.set_font("Helvetica", "B", 13)
         self.set_text_color(*BRAND_TEAL)
         self.multi_cell(0, 8, f"{product['Name']} ({product['SKU']})", border=0, align='L', fill=True)
         
         # Description
-        self.set_font("Lexend", "", 11)
+        self.set_font("Helvetica", "", 11)
         self.set_text_color(0, 0, 0)
         self.set_x(15)
         self.multi_cell(0, 8, product["Description"], border=0, align='L')
