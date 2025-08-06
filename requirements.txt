@@ -4,3 +4,6 @@ openpyxl
 watchdog 
 slack_sdk
 schedule
+requests
+poppler
+pdf2image
