@@ -1,7 +1,7 @@
 # PDF-Automation
  
-Generate beautiful, ready-to-share PDF product sheets from Excel files directly in your browser.
-No installs, no setup — just upload your file and download the PDF.
+This tool is a lightweight application for generating polished, branded product sheets directly from Excel data.
+It’s designed as a portfolio piece to demonstrate data parsing, PDF layout design, and integration workflows.
 
 [Live Demo](https://huggingface.co/spaces/MillieJackson/PDF-Automation)
 
@@ -44,6 +44,12 @@ Use FPDF2 to create a cover page, apply styling, and format product listings.
 
 Show the Excel data table and first two PDF pages in the browser before saving the final PDF.
 
+**5. (Optional) Notifications**
+
+If configured, sender.py emails the PDF, slack.py posts to a channel, and/or webhook.py pings an endpoint.
+
+On Hugging Face Spaces, notification modules are no‑ops unless you add secrets/creds. The portfolio demo runs without them.
+
 ## Example Excel Format
 
 The app expects columns like this:
@@ -70,19 +76,23 @@ Preview in Gradio → Download PDF
 ```
 PDF-Automation/
 │
-├── app.py                  # Main Gradio app entry point
+├── app.py                  # Gradio app entry point (Spaces)
 ├── requirements.txt        # Dependencies
+├── README.md               # This doc
 │
-├── data/                   # Sample Excel files
+├── data/                   # Sample Excel files (.xlsx)
 │
 ├── src/
 │   ├── excel_parser.py     # Excel loading & validation
 │   ├── pdf_generator.py    # PDF creation with FPDF2
-│   ├── run_generators.py   # Glue between parsing & PDF generation
+│   ├── run_generators.py   # Orchestrates parsing → PDF
+│   ├── watcher.py          # (optional) Folder watch for changes
+│   ├── scheduler.py        # (optional) Email batching/scheduling
+│   ├── sender.py           # (optional) Email send via SMTP
+│   ├── slack.py            # (optional) Slack notifications (webhook/API)
+│   └── webhook.py          # (optional) Generic webhook notifier
 │
-├── templates/              # HTML & font assets
-│
-└── README.md               # Project documentation
+└── templates/              # (kept minimal on Spaces; no binaries)
 ```
 
 ## About
