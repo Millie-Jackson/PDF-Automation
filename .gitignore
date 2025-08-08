@@ -1,4 +1,11 @@
-temp/
+# Ignore generated outputs and previews
 outputs/
+temp/
+
+# Ignore branding assets in version control
 templates/logo.png
-templates/fonts/
+templates/fonts/*.ttf
+
+# But keep placeholder versions for deployment
+!templates/logo_placeholder.png
+!templates/fonts_placeholder.txt
