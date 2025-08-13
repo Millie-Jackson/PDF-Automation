@@ -51,12 +51,16 @@ def process_excel(file, email, slack, webhook, use_dummy):
     else:
         image_path = None
 
+    ok, msg = True, ""
     if email:
-        send_pdf_via_email(output_path)
+        ok, msg = send_pdf_via_email(output_path)
+        print(msg)
     if slack:
-        post_to_slack(output_path)
+        ok, msg = post_to_slack(output_path)
+        print(msg)
     if webhook:
-        post_webhook_message(os.getenv("WEBHOOK_URL"), output_path)
+        ok, msg = post_webhook_message(os.getenv("WEBHOOK_URL"), output_path)
+        print(msg)
 
     return df, "PDF generated successfully!", output_path, image_paths
 

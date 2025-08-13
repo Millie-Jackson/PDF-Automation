@@ -6,25 +6,30 @@ src/webhook.py
 import requests
 from datetime import datetime
 import os
+from typing import Tuple
 
 
-def post_webhook_message(url: str, filename: str):
+DEMO_MODE = os.getenv("DEMO_MODE", "1") == "1" or bool(os.getenv("SPACE_ID"))
 
-    if not os.path.exists(filename):
-        print(f"[Webhook] File not found: {filename}")
-        return
+
+def post_webhook_message(webhook_url: str | None, pdf_path: str,payload_extra: dict | None = None) -> Tuple[bool, str]:
     
-    time_str = datetime.now().strftime("%Y-%m-%d %H:%M:%S")
-    payload = {
-        "text": f"New file available: '{os.path.basename}(filename)'\n {time_str}"
+    if DEMO_MODE:
+        msg = f"[DEMO] Webhook called with {os.path.basename(pdf_path)}"
+        print(msg)
+        return True, msg
 
-    }
+    if not webhook_url:
+        return False, "No webhook URL provided."
+    payload = {"file": os.path.basename(pdf_path)}
+
+    if payload_extra:
+        payload.update(payload_extra)
 
     try:
-        response = requests.post(url, json=payload)
-        if response.status_code == 200:
-            print(f"[Webhook] Posted '{filename}' successfully")
-        else:
-            print(f"[Webhook] Failed with status: {response.status_code}")
+        r = requests.post(webhook_url, json=payload, timeout=8)
+        if r.status_code // 100 == 2:
+            return True, "Webhook posted."
+        return False, f"Webhook error: {r.status_code} {r.text}"
     except Exception as e:
-        print(f"[Webhook] Error posting: {e}")            
+        return False, f"Webhook failed: {e}"         
