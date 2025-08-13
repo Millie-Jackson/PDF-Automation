@@ -25,66 +25,85 @@ os.makedirs(TEMP_DIR, exist_ok=True)
 def process_excel(file, email, slack, webhook, use_dummy):
 
     if use_dummy:
-        file_path = "data/sample_products.xlsx"
+        input_path = "data/sample_products.xlsx"
     elif file is not None:
-        file_path = file.name
+        # Gradio provides either .name or .tempfile; .name is widely supported
+        input_path = getattr(file, "name", None) or getattr(file, "path", None)
+        if not input_path or not os.path.exists(input_path):
+            return None, "Uploaded file path not found.", None, []
     else:
-        return None, "Please upload a file or use the example one.", None, None
+        return None, "Please upload a file or tick 'Use example file'.", None, []
     
-    df = pd.read_excel(file_path)
+    try:
+        df = pd.read_excel(input_path)
+    except Exception as e:
+        return None, f"Failed to read Excel: {e}", None, []
+
     timestamp = datetime.now().strftime("%Y%m%d_%H%M%S")
-    output_path = os.path.join(TEMP_DIR, f"product_sheet_{timestamp}.pdf")
+    output_pdf = os.path.join(TEMP_DIR, f"product_sheet_{timestamp}.pdf")
+    try:
+        generate_pdf_from_excel(input_path, output_pdf)
+    except Exception as e:
+        return df, f"PDF generation error: {e}", None, []
+    
+    gallery_paths = []
+    try:
+        pages = convert_from_path(output_pdf, first_page=1, last_page=2)
+        for idx, img in enumerate(pages, start=1):
+            img_path = os.path.join(TEMP_DIR, f"{timestamp}_preview_{idx}.jpg")
+            img.save(img_path, "JPEG")
+            gallery_paths.append(img_path)
+    except Exception as e:
+        # Don't fail the whole run; just skip preview
+        print(f"[Preview] Skipping preview: {e}")
+        gallery_paths = []
 
-    # Save temp Excel and generate PDF
-    df.to_excel("temp/_preview.xlsx", index=False)
-    generate_pdf_from_excel("temp/_preview.xlsx", output_path)
-    print(f"Generated: {output_path}")
-
-    # Convert image to thumnail
-    images = convert_from_path(output_path, first_page=1, last_page=2)
-    image_paths = []
-
-    for idx, img in enumerate(images):
-        img_path = os.path.join(TEMP_DIR, f"{timestamp}_preview_{idx+1}.jpg")
-        img.save(img_path, "JPEG")
-        image_paths.append(img_path)
-    else:
-        image_path = None
-
-    ok, msg = True, ""
+    status_lines = ["✅ PDF generated."]
     if email:
-        ok, msg = send_pdf_via_email(output_path)
-        print(msg)
+        try:
+            ok, msg = send_pdf_via_email(output_pdf)
+            status_lines.append(("✅ " if ok else "⚠️ ") + msg)
+        except Exception as e:
+            status_lines.append(f"⚠️ Email skipped: {e}")
     if slack:
-        ok, msg = post_to_slack(output_path)
-        print(msg)
+        try:
+            ok, msg = post_to_slack(output_pdf)
+            status_lines.append(("✅ " if ok else "⚠️ ") + msg)
+        except Exception as e:
+            status_lines.append(f"⚠️ Slack skipped: {e}")
     if webhook:
-        ok, msg = post_webhook_message(os.getenv("WEBHOOK_URL"), output_path)
-        print(msg)
+        try:
+            ok, msg = post_webhook_message(os.getenv("WEBHOOK_URL"), output_pdf)
+            status_lines.append(("✅ " if ok else "⚠️ ") + msg)
+        except Exception as e:
+            status_lines.append(f"⚠️ Webhook skipped: {e}")
 
-    return df, "PDF generated successfully!", output_path, image_paths
+    return df, "\n".join(status_lines), output_pdf, gallery_paths
 
 with gr.Blocks(title="PDF Generator Interface") as demo:
     gr.Markdown("PDF Product Sheet Generator - Nested{Loop}")
 
     with gr.Row():
-        with gr.Column():
-            use_dummy = gr.Checkbox(label="Use example file", value=False)
-            file_input = gr.File(label="Upload Excel File", file_types=[".xlsx"])
-            email_box = gr.Checkbox(label="Send Email")
-            slack_box = gr.Checkbox(label="Post to Slack")
-            webhook_box = gr.Checkbox(label="Trigger Webhook")
+        use_dummy = gr.Checkbox(label="Use example file", value=False)
+        file_input = gr.File(label="Upload Excel File", file_types=[".xlsx"], file_count="single")
+    with gr.Row():
+        email_box = gr.Checkbox(label="Send Email")
+        slack_box = gr.Checkbox(label="Post to Slack")
+        webhook_box = gr.Checkbox(label="Trigger Webhook")
 
     preview = gr.Dataframe(label="Excel Preview")
-    status = gr.Textbox(label="Status")
+    status = gr.Textbox(label="Status", lines=6)
     download = gr.File(label="Download PDF")
     image_preview = gr.Gallery(label="PDF Preview Pages")
+
     generate_btn = gr.Button("Generate PDF")
 
     generate_btn.click(
         fn=process_excel,
         inputs=[file_input, email_box, slack_box, webhook_box, use_dummy],
-        outputs=[preview, status, download, image_preview]
+        outputs=[preview, status, download, image_preview],
     )
 
-demo.launch(share=False, inbrowser=True)
+
+if __name__ == "__main__":
+    demo.launch()
