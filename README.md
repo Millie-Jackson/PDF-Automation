@@ -1,3 +1,4 @@
+<<<<<<< HEAD
 # PDF-Automation
  
 This tool is a lightweight application for generating polished, branded product sheets directly from Excel data.
@@ -109,3 +110,18 @@ PDF-Automation/
 
 ## License
 This repository is for demonstration and portfolio purposes only. Contact Millie to discuss commercial use, adaptations, or collaboration.
+=======
+---
+title: PDF Automation
+emoji: 🌖
+colorFrom: purple
+colorTo: indigo
+sdk: gradio
+sdk_version: 5.41.0
+app_file: app.py
+pinned: false
+short_description: Takes an Excel file and turns it into a PDF document
+---
+
+Check out the configuration reference at https://huggingface.co/docs/hub/spaces-config-reference
+>>>>>>> c1cdfcc6af1594e2e24ce705fd721fb65c2daa99

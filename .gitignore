@@ -1,3 +1,5 @@
+<<<<<<< HEAD
+<<<<<<< HEAD
 # Ignore generated outputs and previews
 outputs/
 temp/
@@ -9,3 +11,28 @@ templates/fonts/*.ttf
 # But keep placeholder versions for deployment
 !templates/logo_placeholder.png
 !templates/fonts_placeholder.txt
+=======
+=======
+>>>>>>> c1cdfcc6af1594e2e24ce705fd721fb65c2daa99
+outputs/
+temp/
+templates/logo.png
+templates/fonts/*.ttf
+<<<<<<< HEAD
+>>>>>>> c1cdfcc6af1594e2e24ce705fd721fb65c2daa99
+=======
+>>>>>>> c1cdfcc6af1594e2e24ce705fd721fb65c2daa99
+outputs/
+temp/
+templates/logo.png
+templates/fonts/
+
+outputs/
+temp/
+templates/fonts/
+templates/logo.png
+
+outputs/
+temp/
+templates/fonts/
+templates/logo.png
