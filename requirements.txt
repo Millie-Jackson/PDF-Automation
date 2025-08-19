@@ -8,3 +8,5 @@ requests
 poppler-utils
 pdf2image
 python-dotenv
+Pillow
+gradio
