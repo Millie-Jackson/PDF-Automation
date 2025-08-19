@@ -10,3 +10,4 @@ pdf2image
 python-dotenv
 Pillow
 gradio
+pytest

@@ -14,6 +14,7 @@ from src.run_generators import generate_pdf_from_excel
 from src.sender import send_pdf_via_email
 from src.slack import post_to_slack
 from src.webhook import post_webhook_message
+from .utils import demo_df as _demo_df, save_mapping, load_mapping, apply_transforms
 
 
 load_dotenv()
@@ -21,6 +22,10 @@ load_dotenv()
 TEMP_DIR = "temp"
 os.makedirs(TEMP_DIR, exist_ok=True)
 
+
+def demo_df() -> pd.DataFrame:
+    """Public helper for tests/UI; wraps utils.demo_df()."""
+    return _demo_df()
 
 def process_excel(file, email, slack, webhook, use_dummy):
 
@@ -80,6 +85,7 @@ def process_excel(file, email, slack, webhook, use_dummy):
 
     return df, "\n".join(status_lines), output_pdf, gallery_paths
 
+
 with gr.Blocks(title="PDF Generator Interface") as demo:
     gr.Markdown("PDF Product Sheet Generator - Nested{Loop}")
 
@@ -107,3 +113,4 @@ with gr.Blocks(title="PDF Generator Interface") as demo:
 
 if __name__ == "__main__":
     demo.launch()
+

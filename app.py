@@ -1,17 +1,11 @@
-<<<<<<< HEAD
 import os
-
 
 # Default to demo mode on Spaces; override locally with DEMO_MODE=0
 os.environ.setdefault("DEMO_MODE", "1")
 
-=======
->>>>>>> c1cdfcc6af1594e2e24ce705fd721fb65c2daa99
 from src.interface import demo
 
-<<<<<<< Updated upstream
-demo.launch()
-=======
+
 if __name__ == "__main__":
     # Spaces sets PORT; default to 7860 locally
     port = int(os.getenv("PORT", "7860"))
@@ -24,8 +18,5 @@ if __name__ == "__main__":
         server_name="0.0.0.0",
         server_port=port,
         show_api=False,
-        # Gradio's SSR flag varies by version; if you used it earlier:
-        # ssr_mode
-        # =ssr_mode,
+        inbrowser=True, 
     )
->>>>>>> Stashed changes
