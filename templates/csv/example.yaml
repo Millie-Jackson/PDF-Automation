@@ -1,0 +1,12 @@
+version: 1
+name: example_template
+output_schema: [id, sku, qty, price_pennies, segment]
+map:
+  id: { from: ID, transforms: [trim] }
+  sku: { from: SKU, transforms: [trim, upper] }
+  qty: { from: QTY, transforms: [digits_only] }
+  price_pennies: { from: PRICE, transforms: [currency_to_minor] }
+  segment: { lookup: { file: lookups/segments.csv, key: CUST_ID, value: SEGMENT } }
+constants:
+  currency: GBP
+missing: { policy: fill, value: "" }

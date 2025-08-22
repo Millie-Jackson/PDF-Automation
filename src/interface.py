@@ -10,10 +10,15 @@ import base64
 from datetime import datetime
 from pdf2image import convert_from_path
 from dotenv import load_dotenv
+from pathlib import Path
 from src.run_generators import generate_pdf_from_excel
 from src.sender import send_pdf_via_email
 from src.slack import post_to_slack
 from src.webhook import post_webhook_message
+from .csvbot.templates import TemplateRegistry
+from .csvbot.lookup import DatabaseLookups
+from .csvbot.mapper import apply_template
+from .csvbot.io import read_csv_any, write_csv
 from .utils import demo_df as _demo_df, save_mapping, load_mapping, apply_transforms
 
 
@@ -21,6 +26,27 @@ load_dotenv()
 
 TEMP_DIR = "temp"
 os.makedirs(TEMP_DIR, exist_ok=True)
+
+_csv_registry = TemplateRegistry()
+_csv_lookups = DatabaseLookups()
+
+
+def _list_csv_templates():
+    
+    return [str(p) for p in Path("templates/csv").glob("*.y*ml")]
+
+def _map_csv(input_file, template_path):
+
+    if not input_file or not template_path:
+        return None, None, "Please upload a CSV and select a template."
+    
+    df_in = read_csv_any(getattr(input_file, "name", input_file))
+    tmpl = _csv_registry.get(template_path)
+    df_out = apply_template(df_in, tmpl, _csv_lookups)
+    out_path = Path("/tmp/csv_mapper_output.csv")
+    write_csv(df_out, out_path, quote_all=True)
+
+    return df_in.head(20), df_out.head(20), str(out_path)
 
 
 def demo_df() -> pd.DataFrame:
@@ -86,31 +112,52 @@ def process_excel(file, email, slack, webhook, use_dummy):
     return df, "\n".join(status_lines), output_pdf, gallery_paths
 
 
-with gr.Blocks(title="PDF Generator Interface") as demo:
-    gr.Markdown("PDF Product Sheet Generator - Nested{Loop}")
+with gr.Blocks(title="PDF & CSV Generator Interface") as demo:
+    with gr.Tabs():
+        # ----- Tab 1: PDF Generator -----
+        with gr.Tab("PDF Generator"):
+            gr.Markdown("**PDF Product Sheet Generator - Nested{Loop}**")
 
-    with gr.Row():
-        use_dummy = gr.Checkbox(label="Use example file", value=False)
-        file_input = gr.File(label="Upload Excel File", file_types=[".xlsx"], file_count="single")
-    with gr.Row():
-        email_box = gr.Checkbox(label="Send Email")
-        slack_box = gr.Checkbox(label="Post to Slack")
-        webhook_box = gr.Checkbox(label="Trigger Webhook")
+        with gr.Row():
+            use_dummy = gr.Checkbox(label="Use example file", value=False)
+            file_input = gr.File(label="Upload Excel File", file_types=[".xlsx"], file_count="single")
+        
+        with gr.Row():
+            email_box = gr.Checkbox(label="Send Email")
+            slack_box = gr.Checkbox(label="Post to Slack")
+            webhook_box = gr.Checkbox(label="Trigger Webhook")
+    
+        preview = gr.Dataframe(label="Excel Preview")
+        status = gr.Textbox(label="Status", lines=6)
+        download = gr.File(label="Download PDF")
+        image_preview = gr.Gallery(label="PDF Preview Pages")
 
-    preview = gr.Dataframe(label="Excel Preview")
-    status = gr.Textbox(label="Status", lines=6)
-    download = gr.File(label="Download PDF")
-    image_preview = gr.Gallery(label="PDF Preview Pages")
+        generate_btn = gr.Button("Generate PDF")
 
-    generate_btn = gr.Button("Generate PDF")
+        generate_btn.click(
+            fn=process_excel,
+            inputs=[file_input, email_box, slack_box, webhook_box, use_dummy],
+            outputs=[preview, status, download, image_preview],
+        )
 
-    generate_btn.click(
-        fn=process_excel,
-        inputs=[file_input, email_box, slack_box, webhook_box, use_dummy],
-        outputs=[preview, status, download, image_preview],
-    )
+    # ----- Tab 2: CSV Mapper -----
+    with gr.Tab("CSV Mapper"):
+        gr.Markdown("### CSV -> CSV Mapper")
+
+        csv_in = gr.File(label="Input CSV", file_types=[".csv"])        
+        csv_tmpl = gr.Dropdown(choices=_list_csv_templates(), label="Template")
+        csv_btn = gr.Button("Map CSV")
+        
+        csv_in_tbl = gr.Dataframe(label="Input (head)")
+        csv_out_tbl = gr.Dataframe(label="Output (head)")
+        csv_out_file = gr.File(label="Download Output")
+
+        csv_btn.click(
+            _map_csv,
+            inputs=[csv_in, csv_tmpl],
+            outputs=[csv_in_tbl, csv_out_tbl, csv_out_file]
+        )
 
 
 if __name__ == "__main__":
     demo.launch()
-
