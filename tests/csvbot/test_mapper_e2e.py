@@ -27,6 +27,6 @@ def test_apply_template(tmp_path: Path):
         },
         constants={}, missing={"policy":"fill", "value": ""}
     )
+
     out = apply_template(df, t, DatabaseLookups())
-    rec = out.to_dict(orient="records")[0]
-    assert rec == {"id":"001","sku":"ABC","qty":"10","price_pennies":"123","segment":"VIP"}
+    assert out.to_dict(orient="records")[0] == {"id":"001","sku":"ABC","qty":"10","price_pennies":"123","segment":"VIP"}

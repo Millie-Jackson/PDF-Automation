@@ -112,51 +112,71 @@ def process_excel(file, email, slack, webhook, use_dummy):
     return df, "\n".join(status_lines), output_pdf, gallery_paths
 
 
-with gr.Blocks(title="PDF & CSV Generator Interface") as demo:
-    with gr.Tabs():
-        # ----- Tab 1: PDF Generator -----
-        with gr.Tab("PDF Generator"):
-            gr.Markdown("**PDF Product Sheet Generator - Nested{Loop}**")
-
-        with gr.Row():
+with gr.Blocks() as pdf_tab:
+    # Top 3 columns
+    with gr.Row(equal_height=True):
+        # Left column
+        with gr.Column(scale=1, min_width=260):
             use_dummy = gr.Checkbox(label="Use example file", value=False)
-            file_input = gr.File(label="Upload Excel File", file_types=[".xlsx"], file_count="single")
-        
-        with gr.Row():
+            gr.Markdown("**Options**")
             email_box = gr.Checkbox(label="Send Email")
             slack_box = gr.Checkbox(label="Post to Slack")
             webhook_box = gr.Checkbox(label="Trigger Webhook")
-    
-        preview = gr.Dataframe(label="Excel Preview")
-        status = gr.Textbox(label="Status", lines=6)
-        download = gr.File(label="Download PDF")
-        image_preview = gr.Gallery(label="PDF Preview Pages")
+        # Middle column
+        with gr.Column(scale=1, min_width=260):
+            file_input = gr.File(label="Upload Excel File", file_types=[".xlsx"], file_count="single")
+        # RIght column
+        with gr.Column(scale=1, min_width=260):
+            generate_btn = gr.Button("Generate PDF")
+            status = gr.Textbox(label="Status", lines=6)
+            download = gr.File(label="Download PDF")
 
-        generate_btn = gr.Button("Generate PDF")
+    preview = gr.Dataframe(label="Excel Preview")
+    image_preview = gr.Gallery(label="PDF Preview Pages")
+    generate_btn.click(
+        fn=process_excel,
+        inputs=[file_input, email_box, slack_box, webhook_box, use_dummy],
+        outputs=[preview, status, download, image_preview],
+    )
 
-        generate_btn.click(
-            fn=process_excel,
-            inputs=[file_input, email_box, slack_box, webhook_box, use_dummy],
-            outputs=[preview, status, download, image_preview],
-        )
-
-    # ----- Tab 2: CSV Mapper -----
-    with gr.Tab("CSV Mapper"):
-        gr.Markdown("### CSV -> CSV Mapper")
-
-        csv_in = gr.File(label="Input CSV", file_types=[".csv"])        
-        csv_tmpl = gr.Dropdown(choices=_list_csv_templates(), label="Template")
-        csv_btn = gr.Button("Map CSV")
-        
+with gr.Blocks() as csv_tab:
+    gr.Markdown("### CSV -> CSV Mapper")
+    # Top 3 columns
+    with gr.Row(equal_height=True):
+        # Left column
+        with gr.Column(scale=1, min_width=260):
+            gr.Markdown("**Template**")
+            csv_tmpl = gr.Dropdown(choices=_list_csv_templates(), label="Template", interactive=True)
+            refresh_tmpl = gr.Button("Refresh templates")
+        # Middle column
+        with gr.Column(scale=1, min_width=260):
+            csv_in = gr.File(label="Input CSV", file_types=[".csv"])   
+        # Right column
+        with gr.Column(scale=1, min_width=260):     
+            csv_btn = gr.Button("Map CSV")  
+            csv_out_file = gr.File(label="Download Output")
+    # Previews
+    with gr.Row():           
         csv_in_tbl = gr.Dataframe(label="Input (head)")
         csv_out_tbl = gr.Dataframe(label="Output (head)")
-        csv_out_file = gr.File(label="Download Output")
+    
+    csv_btn.click(
+        _map_csv,
+        inputs=[csv_in, csv_tmpl],
+        outputs=[csv_in_tbl, csv_out_tbl, csv_out_file]
+    )
 
-        csv_btn.click(
-            _map_csv,
-            inputs=[csv_in, csv_tmpl],
-            outputs=[csv_in_tbl, csv_out_tbl, csv_out_file]
-        )
+    # Refresh template dropdown
+    refresh_tmpl.click(
+        lambda: gr.Dropdown.update(choices=_list_csv_templates),
+        outputs=csv_tmpl
+    )
+
+demo = gr.TabbedInterface(
+    [pdf_tab, csv_tab],
+    ["PDF Generator", "CSV Mapper"],
+    title="Automation Workbench"
+)
 
 
 if __name__ == "__main__":

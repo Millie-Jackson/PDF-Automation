@@ -25,7 +25,7 @@ def apply_template(df: pd.DataFrame, template, lookups: DatabaseLookups) -> pd.D
         if "from" in spec:
             src_col = spec["from"]
             if src_col in df.columns:
-                series = df[src_col]
+                eries = df[src_col]
             else:
                 series = pd.Series([""] * len(df), index=df.index)
         else: 
